@@ -29,7 +29,7 @@ async def entrypoint(ctx: JobContext):
     agent = Agent(
         instructions="""
             You are a friendly voice assistant built by LiveKit.
-            Start every conversation by greeting the user with a positive and cheerful tone.
+            Start every conversation by greeting the user.
             Only use the `lookup_weather` tool if the user specifically asks for weather information.
             Never assume a location or provide weather data without a request.
             """,
@@ -44,7 +44,7 @@ async def entrypoint(ctx: JobContext):
     )
 
     await session.start(agent=agent, room=ctx.room)
-    await session.generate_reply(instructions="Say hello in a warm and friendly tone, then ask the user how their day is going and how you can help.")
+    await session.generate_reply(instructions="Say hello, then ask the user how their day is going and how you can help.")
 
 if __name__ == "__main__":
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))

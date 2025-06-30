@@ -22,6 +22,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 load_dotenv(dotenv_path=".env.local")
 mongodb_uri = os.getenv("MONGODB_URI")
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 mongo_client = MongoClient(mongodb_uri)
 
 db = mongo_client["livekitpoc"]
@@ -48,7 +49,8 @@ async def background_saver():
 async def fetch_conversation_history(room_name: str):
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"http://localhost:8000/conversation/{room_name}") as resp:
+            async with session.get(f"{API_BASE_URL}/conversation/{room_name}") as resp:
+
                 if resp.status == 200:
                     data = await resp.json()
                     return data.get("messages", [])

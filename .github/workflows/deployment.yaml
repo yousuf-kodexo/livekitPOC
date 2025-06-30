@@ -64,7 +64,7 @@ jobs:
         application_name: LiveKit_POC
         environment_name: LiveKitPOC-dev
         version_label: ${{ github.sha }}
-        region: ${{secrets.AWS_REGION}}
+        region: us-east-2
         use_existing_version_if_available: true
         deployment_package: main.zip
         wait_for_deployment: true

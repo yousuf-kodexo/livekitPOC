@@ -53,7 +53,7 @@ jobs:
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: ${{secrets.ROLE_TO_ASSUME}}
-        aws-region: ${{secrets.AWS_REGION}}
+        aws-region: us-east-2
 
     - name: Deploy to Elastic benstalk
       uses: einaregilsson/beanstalk-deploy@v21

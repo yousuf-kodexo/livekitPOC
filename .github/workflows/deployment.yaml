@@ -1,0 +1,71 @@
+name: Build and deploy LiveKit
+
+on:
+  push:
+    branches:
+      - main
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python version
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Installing pip 
+      run: | 
+        python -m pip install --upgrade pip 
+
+    - name: Installing Dependencies
+      run: pip install -r requirements.txt
+
+    - name: Generating Zip
+      run: zip -r main.zip . -x '.git' '.gitignore'
+      
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with: 
+        name: main
+        path: main.zip
+  
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Download Artifact
+      uses: actions/download-artifact@v4 
+      with: 
+        name: main 
+
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{secrets.ROLE_TO_ASSUME}}
+        aws-region: ${{secrets.AWS_REGION}}
+
+    - name: Deploy to Elastic benstalk
+      uses: einaregilsson/beanstalk-deploy@v21
+      with:
+        aws_access_key: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        aws_session_token: ${{ env.AWS_SESSION_TOKEN }}
+        application_name: LiveKit_POC
+        environment_name: LiveKitPOC-dev
+        version_label: ${{ github.sha }}
+        region: ${{secrets.AWS_REGION}}
+        use_existing_version_if_available: true
+        deployment_package: main.zip
+        wait_for_deployment: true
+

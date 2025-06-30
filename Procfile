@@ -1,1 +1,1 @@
-web: python start --host 0.0.0.0 --port 8000
+web: python start.py --host 0.0.0.0 --port 8000

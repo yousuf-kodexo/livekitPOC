@@ -346,12 +346,6 @@ Summary:
                     "text": event.item.text_content,
                 }
 
-                collection.update_one(
-                    {"room": ctx.room.name},
-                    {"$push": {"messages": msg}},
-                    upsert=True
-                )
-
                 data_message = {
                     "type": "conversation_message",
                     "role": event.item.role,
@@ -399,6 +393,48 @@ Summary:
     except Exception as e:
         logger.error(f"Error in entrypoint: {str(e)}", exc_info=True)
 
+
+# End session endpoint - disconnects room and marks as completed
+# End session endpoint - disconnects room and marks as completed
+# End session endpoint - disconnects room and marks as completed
+@app.post("/end/{room}")
+async def end_session(room: str):
+    try:
+        # Mark session as ended in database
+        collection.update_one(
+            {"room": room},
+            {"$set": {"status": "ended", "ended_at": datetime.now()}},
+            upsert=True
+        )
+        
+        # Delete the room using LiveKit API
+        try:
+            from livekit.api import LiveKitAPI, DeleteRoomRequest
+            
+            # Create LiveKit API client
+            lkapi = LiveKitAPI(url=LIVEKIT_URL, api_key=LIVEKIT_API_KEY, api_secret=LIVEKIT_API_SECRET)
+            
+            # Delete the room (this disconnects all participants)
+            await lkapi.room.delete_room(DeleteRoomRequest(room=room))
+            
+            # Close the API client
+            await lkapi.aclose()
+            
+            logger.info(f"Room {room} deleted successfully from LiveKit")
+            
+        except Exception as livekit_error:
+            logger.error(f"LiveKit API error: {livekit_error}")
+            # Continue even if LiveKit deletion fails
+        
+        return {
+            "room": room,
+            "status": "ended",
+            "message": f"Session ended and room {room} deleted"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error ending session: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 if __name__ == "__main__":
     import uvicorn
     

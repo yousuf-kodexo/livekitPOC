@@ -99,7 +99,7 @@ async def connect_session(request: SessionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Pause endpoint
+# Pause endpoint not used
 @app.post("/pause/{room}", response_model=SessionResponse)
 async def pause_session(room: str):
     try:
